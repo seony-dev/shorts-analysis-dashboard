@@ -9,6 +9,19 @@
 <body>
     <div id="root"></div>
     <script>
+        // spa-github-pages 디코드 — 404.html 이 '?/video/1' 형태로 리다이렉트한 URL 을 원래 경로로 복원
+        (function (l) {
+            if (l.search[1] === '/') {
+                var decoded = l.search.slice(1).split('&').map(function (s) {
+                    return s.replace(/~and~/g, '&');
+                }).join('?');
+                window.history.replaceState(null, null,
+                    l.pathname.slice(0, -1) + decoded + l.hash
+                );
+            }
+        })(window.location);
+    </script>
+    <script>
         // GitHub Pages 서브패스 대응 — 라우터/페치에 루트 경로로 보이게 함
         (function () {
             // 1) 라우터 베이스: 배포 환경에서만 붙임 (로컬은 '' 이라 기존 동작 유지)
@@ -38,15 +51,16 @@
                 history.replaceState = wrap(history.replaceState);
             }
 
-            // 2) 데이터 페치 리다이렉트 — 앱이 /videos_data.json 요청하면 ./data/ 로
+            // 2) 데이터 페치 리다이렉트 — /videos_data.json 요청을 BASE/data/ 로 (절대경로, 서브라우트에서도 정확)
+            var DATA_BASE = BASE + '/data';
             var originalFetch = window.fetch.bind(window);
             window.fetch = function (input, init) {
                 var url = typeof input === 'string' ? input : (input && input.url);
                 if (url === '/videos_data.json' || url === 'videos_data.json') {
-                    return originalFetch('./data/videos_data.json', init);
+                    return originalFetch(DATA_BASE + '/videos_data.json', init);
                 }
                 if (url === '/insights.json' || url === 'insights.json') {
-                    return originalFetch('./data/insights.json', init);
+                    return originalFetch(DATA_BASE + '/insights.json', init);
                 }
                 return originalFetch(input, init);
             };

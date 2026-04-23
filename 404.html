@@ -2,56 +2,21 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube Shorts Success Analysis Dashboard</title>
-    <link rel="stylesheet" href="./css/styles.css">
-</head>
-<body>
-    <div id="root"></div>
+    <title>Redirecting…</title>
     <script>
-        // GitHub Pages 서브패스 대응 — 라우터/페치에 루트 경로로 보이게 함
-        (function () {
-            // 1) 라우터 베이스: 배포 환경에서만 붙임 (로컬은 '' 이라 기존 동작 유지)
-            var BASE = (location.hostname.endsWith('github.io')) ? '/shorts-analysis-dashboard' : '';
-
-            // wouter 의 pathname getter 를 패치된 번들이 여기로 호출함 — BASE 벗긴 값 반환
-            window.__getPath__ = function () {
-                var p = location.pathname;
-                if (BASE && p.indexOf(BASE) === 0) {
-                    return p.slice(BASE.length) || '/';
-                }
-                return p;
-            };
-
-            if (BASE) {
-                // pushState/replaceState 에 BASE 자동 prepend (wouter 가 '/dashboard' 넘기면 실제 URL 은 '/shorts-analysis-dashboard/dashboard')
-                function wrap(orig) {
-                    return function (state, title, url) {
-                        if (typeof url === 'string' && url.charAt(0) === '/'
-                            && url.indexOf(BASE + '/') !== 0 && url !== BASE) {
-                            url = BASE + url;
-                        }
-                        return orig.call(this, state, title, url);
-                    };
-                }
-                history.pushState = wrap(history.pushState);
-                history.replaceState = wrap(history.replaceState);
-            }
-
-            // 2) 데이터 페치 리다이렉트 — 앱이 /videos_data.json 요청하면 ./data/ 로
-            var originalFetch = window.fetch.bind(window);
-            window.fetch = function (input, init) {
-                var url = typeof input === 'string' ? input : (input && input.url);
-                if (url === '/videos_data.json' || url === 'videos_data.json') {
-                    return originalFetch('./data/videos_data.json', init);
-                }
-                if (url === '/insights.json' || url === 'insights.json') {
-                    return originalFetch('./data/insights.json', init);
-                }
-                return originalFetch(input, init);
-            };
-        })();
+        // spa-github-pages 트릭: 서브라우트로 들어온 요청을 베이스로 리다이렉트 (경로는 쿼리로 인코딩)
+        // index.html 이 쿼리를 디코드해서 원래 경로로 replaceState 함
+        (function (l) {
+            var segmentsToKeep = 1; // /shorts-analysis-dashboard 부분 유지
+            l.replace(
+                l.protocol + '//' + l.host +
+                l.pathname.split('/').slice(0, 1 + segmentsToKeep).join('/') + '/?/' +
+                l.pathname.slice(1).split('/').slice(segmentsToKeep).join('/').replace(/&/g, '~and~') +
+                (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
+                l.hash
+            );
+        })(window.location);
     </script>
-    <script src="./js/app.js"></script>
-</body>
+</head>
+<body></body>
 </html>
