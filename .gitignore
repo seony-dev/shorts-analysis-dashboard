@@ -1,0 +1,15 @@
+# 로컬 전용 — GitHub에는 안 올림
+source-code/
+dist/
+.claude/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.bak
+.vscode/
+.idea/
+
+# Node (혹시 나중에 로컬 빌드 시)
+node_modules/
+npm-debug.log*
